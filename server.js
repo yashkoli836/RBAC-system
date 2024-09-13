@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 const { check, validationResult } = require('express-validator');
 const app = express();
 
-const SECRET_KEY = 'your_secret_key'; // Replace with a strong secret key
+const SECRET_KEY = 'VERYVERYSECRET'; // Replace with a strong secret key
 const users = []; // In-memory user storage for demonstration
 
 app.use(cors());
