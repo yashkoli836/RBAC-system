@@ -1,6 +1,6 @@
 const handleResponse = (response, text) => {
     if (!response.ok) {
-        throw new Error(text || 'Request failed');
+        throw new (text || 'Request failed');
     }
     return response.text();
 };

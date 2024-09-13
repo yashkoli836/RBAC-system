@@ -6,16 +6,14 @@ const bodyParser = require('body-parser');
 const { check, validationResult } = require('express-validator');
 const app = express();
 
-const SECRET_KEY = 'your_secret_key'; // Replace with a strong secret key
-const users = []; // In-memory user storage for demonstration
+const SECRET_KEY = 'my_secret_key'; 
+const users = []; 
 
 app.use(cors());
 app.use(bodyParser.json());
-
-// Serve static files from the 'src' directory
 app.use(express.static('src'));
 
-// Middleware to check JWT and roles
+// Middleware to check JWT 
 const authenticateJWT = (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1];
     if (!token) return res.sendStatus(401);
@@ -47,11 +45,13 @@ const logRequest = (req, res, next) => {
 app.use('/user', authenticateJWT, logRequest);
 app.use('/admin', authenticateJWT, logRequest);
 
-// Registration Route with Validation and Sanitization
+// Registration Route with Validation 
 app.post('/register', [
+
     check('username').isAlphanumeric().withMessage('Username must be alphanumeric').trim().escape(),
     check('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
     check('role').isIn(['Admin', 'User', 'Guest']).withMessage('Role must be Admin, User, or Guest')
+
 ], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -60,25 +60,21 @@ app.post('/register', [
 
     const { username, password, role } = req.body;
 
-    // Check if user already exists
     const existingUser = users.find(user => user.username === username);
     if (existingUser) {
         return res.status(400).send('User already exists');
     }
-
-    // Hash the password
+    
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Save user
     users.push({ username, password: hashedPassword, role });
 
-    // Create JWT token
     const token = jwt.sign({ username, role }, SECRET_KEY, { expiresIn: '1h' });
 
     res.json({ token });
 });
 
-// Login Route with Validation and Sanitization
+// Login Route with Validation 
 app.post('/login', [
     check('username').isAlphanumeric().withMessage('Username must be alphanumeric').trim().escape(),
     check('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
@@ -89,20 +85,17 @@ app.post('/login', [
     }
 
     const { username, password } = req.body;
-
-    // Find user
     const user = users.find(user => user.username === username);
     if (!user) {
         return res.status(400).send('Invalid credentials');
     }
 
-    // Check password
+ 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
         return res.status(400).send('Invalid credentials');
     }
 
-    // Create JWT token
     const token = jwt.sign({ username, role: user.role }, SECRET_KEY, { expiresIn: '1h' });
 
     res.json({ token });
@@ -121,14 +114,13 @@ app.post('/update-role', [
 
     const { adminToken, username, role } = req.body;
 
-    // Verify admin token
     try {
         const adminPayload = jwt.verify(adminToken, SECRET_KEY);
         if (adminPayload.role !== 'Admin') {
             return res.status(403).send('Access denied');
         }
 
-        // Find user and update role
+        //update role
         const user = users.find(user => user.username === username);
         if (!user) {
             return res.status(404).send('User not found');
@@ -141,17 +133,17 @@ app.post('/update-role', [
     }
 });
 
-// Public Route
+
 app.get('/public', (req, res) => {
     res.send('Public content');
 });
 
-// User Route
+
 app.get('/user', authenticateJWT, authorizeRole(['User', 'Admin']), (req, res) => {
     res.send('User content');
 });
 
-// Admin Route
+
 app.get('/admin', authenticateJWT, authorizeRole(['Admin']), (req, res) => {
     res.send('Admin content');
 });
