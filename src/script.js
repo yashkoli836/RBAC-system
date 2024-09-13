@@ -1,4 +1,11 @@
-const registerUser = async () => {
+const handleResponse = (response, text) => {
+    if (!response.ok) {
+        throw new Error(text || 'Request failed');
+    }
+    return response.text();
+};
+
+const register = async () => {
     const username = document.getElementById('register-username').value;
     const password = document.getElementById('register-password').value;
     const role = document.getElementById('register-role').value;
@@ -11,21 +18,15 @@ const registerUser = async () => {
             },
             body: JSON.stringify({ username, password, role })
         });
-        
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.errors.map(e => e.msg).join(', '));
-        }
 
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
-        document.getElementById('response').textContent = `Registered successfully. Token: ${data.token}`;
+        const result = await handleResponse(response, 'Registration successful.');
+        document.getElementById('response').textContent = `Registered successfully. Token: ${result}`;
     } catch (error) {
         document.getElementById('response').textContent = `Error: ${error.message}`;
     }
 };
 
-const loginUser = async () => {
+const login = async () => {
     const username = document.getElementById('login-username').value;
     const password = document.getElementById('login-password').value;
 
@@ -38,39 +39,30 @@ const loginUser = async () => {
             body: JSON.stringify({ username, password })
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.errors.map(e => e.msg).join(', '));
-        }
-
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
-        document.getElementById('response').textContent = `Logged in successfully. Token: ${data.token}`;
+        const result = await handleResponse(response, 'Login successful.');
+        localStorage.setItem('token', result);
+        document.getElementById('response').textContent = `Logged in successfully. Token: ${result}`;
     } catch (error) {
         document.getElementById('response').textContent = `Error: ${error.message}`;
     }
 };
 
-const fetchContent = async (route) => {
-    const token = localStorage.getItem('token');
+const updateRole = async () => {
+    const adminToken = document.getElementById('admin-token').value;
+    const username = document.getElementById('update-username').value;
+    const role = document.getElementById('update-role').value;
 
     try {
-        const response = await fetch(`http://localhost:3000${route}`, {
-            method: 'GET',
+        const response = await fetch('http://localhost:3000/update-role', {
+            method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`
-            }
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ adminToken, username, role })
         });
 
-        if (response.status === 401) {
-            throw new Error('Unauthorized: Invalid or missing token');
-        }
-        if (response.status === 403) {
-            throw new Error('Forbidden: Insufficient permissions');
-        }
-
-        const data = await response.text();
-        document.getElementById('response').textContent = data;
+        const message = await handleResponse(response, 'Role update successful.');
+        document.getElementById('response').textContent = message;
     } catch (error) {
         document.getElementById('response').textContent = `Error: ${error.message}`;
     }

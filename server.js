@@ -1,5 +1,4 @@
 const express = require('express');
-const path = require('path');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
@@ -7,19 +6,14 @@ const bodyParser = require('body-parser');
 const { check, validationResult } = require('express-validator');
 const app = express();
 
-const SECRET_KEY = 'VERYVERYSECRET'; // Replace with a strong secret key
+const SECRET_KEY = 'your_secret_key'; // Replace with a strong secret key
 const users = []; // In-memory user storage for demonstration
 
 app.use(cors());
 app.use(bodyParser.json());
 
 // Serve static files from the 'src' directory
-app.use(express.static(path.join(__dirname, 'src')));
-
-// Handle root route
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'src', 'index.html'));
-});
+app.use(express.static('src'));
 
 // Middleware to check JWT and roles
 const authenticateJWT = (req, res, next) => {
@@ -161,10 +155,6 @@ app.get('/user', authenticateJWT, authorizeRole(['User', 'Admin']), (req, res) =
 app.get('/admin', authenticateJWT, authorizeRole(['Admin']), (req, res) => {
     res.send('Admin content');
 });
-
-// Apply logging middleware to protected routes
-app.use('/user', authenticateJWT, logRequest);
-app.use('/admin', authenticateJWT, logRequest);
 
 app.listen(3000, () => {
     console.log('Server running on http://localhost:3000');
