@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RBAC System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>RBAC System</h1>
+    <form id="register-form">
+        <h2>Register</h2>
+        <input type="text" id="register-username" placeholder="Username" required />
+        <input type="password" id="register-password" placeholder="Password" required />
+        <select id="register-role" required>
+            <option value="Admin">Admin</option>
+            <option value="User">User</option>
+            <option value="Guest">Guest</option>
+        </select>
+        <button type="button" onclick="registerUser()">Register</button>
+    </form>
+
+    <form id="login-form">
+        <h2>Login</h2>
+        <input type="text" id="login-username" placeholder="Username" required />
+        <input type="password" id="login-password" placeholder="Password" required />
+        <button type="button" onclick="loginUser()">Login</button>
+    </form>
+
+    <button type="button" onclick="fetchContent('/public')">Fetch Public Content</button>
+    <button type="button" onclick="fetchContent('/user')">Fetch User Content</button>
+    <button type="button" onclick="fetchContent('/admin')">Fetch Admin Content</button>
+
+    <p id="response"></p>
+
+    <script src="script.js"></script>
+</body>
+</html>
