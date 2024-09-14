@@ -25,11 +25,6 @@ const authenticateJWT = (req, res, next) => {
     });
 };
 
-const authorizeRole = (roles) => (req, res, next) => {
-    if (!roles.includes(req.user.role)) return res.sendStatus(403);
-    next();
-};
-
 // Logging Middleware
 const logRequest = (req, res, next) => {
     const { method, originalUrl } = req;
@@ -116,11 +111,10 @@ app.post('/update-role', [
 
     try {
         const adminPayload = jwt.verify(adminToken, SECRET_KEY);
+        
         if (adminPayload.role !== 'Admin') {
             return res.status(403).send('Access denied');
         }
-
-        //update role
         const user = users.find(user => user.username === username);
         if (!user) {
             return res.status(404).send('User not found');
@@ -129,23 +123,42 @@ app.post('/update-role', [
         user.role = role;
         res.send('Role updated successfully');
     } catch (err) {
-        res.status(401).send('Invalid admin token');
+        return res.status(401).send('Invalid admin token');
     }
 });
 
+const authenticateToken = (req, res, next) => {
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (!token) return res.sendStatus(401); 
+
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) return res.sendStatus(403); 
+
+        req.user = user;
+        next();
+    });
+};
+
+const authorizeRole = (roles) => {
+    return (req, res, next) => {
+        if (roles.includes(req.user.role)) {
+            next();
+        } else {
+            res.sendStatus(403); 
+        }
+    };
+};
+
+app.get('/admin', authenticateToken, authorizeRole(['Admin']), (req, res) => {
+    res.send('Admin route');
+});
+
+app.get('/user', authenticateToken, authorizeRole(['User', 'Admin']), (req, res) => {
+    res.send('User route');
+});
 
 app.get('/public', (req, res) => {
-    res.send('Public content');
-});
-
-
-app.get('/user', authenticateJWT, authorizeRole(['User', 'Admin']), (req, res) => {
-    res.send('User content');
-});
-
-
-app.get('/admin', authenticateJWT, authorizeRole(['Admin']), (req, res) => {
-    res.send('Admin content');
+    res.send('Public route');
 });
 
 app.listen(3000, () => {
