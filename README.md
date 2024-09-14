@@ -2,4 +2,4 @@ To test it dowmload the source code and open the cmd in that folder and type "no
 
 To test user access use this -> curl -H "Authorization: Bearer your-token" http://localhost:3000/user, curl -H "Authorization: Bearer your-token" http://localhost:3000/admin
 
-you have to run this in bash terminal with the auth token that was generated uring registration or login.
+you have to run this in bash terminal with the auth token that was generated during registration or login.
